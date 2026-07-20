@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FDJ × Dynamics 365 — Ice Break</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --fdj-red: #e2001a;
+      --fdj-red-2: #b30015;
+      --fdj-blue: #0a2a6b;
+      --fdj-blue-2: #123a92;
+      --gold: #f5c518;
+      --gold-2: #e0a800;
+      --bg1: #071233;
+      --bg2: #0d1f4d;
+      --surface: #ffffff;
+      --surface-soft: #f4f7ff;
+      --text: #10203f;
+      --muted: #5a6a86;
+      --line: #e2e8f5;
+      --ok: #0f9d58;
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-xl: 0 30px 70px rgba(3, 10, 35, 0.45);
+      --shadow-lg: 0 18px 44px rgba(3, 10, 35, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      padding: clamp(16px, 4vw, 48px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% -10%, rgba(226, 0, 26, 0.55), transparent 55%),
+        radial-gradient(1100px 800px at 110% 20%, rgba(245, 197, 24, 0.28), transparent 55%),
+        radial-gradient(900px 900px at 90% 120%, rgba(18, 58, 146, 0.6), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+
+    /* Floating decorative tokens */
+    .token {
+      position: fixed;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.06);
+      pointer-events: none;
+      user-select: none;
+      animation: float 14s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-26px) rotate(8deg); }
+    }
+
+    .stage {
+      width: min(960px, 100%);
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ---------- Header ---------- */
+    .head {
+      text-align: center;
+      color: #fff;
+      margin-bottom: clamp(20px, 4vw, 34px);
+    }
+    .brandline {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(8px);
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      font-size: 14px;
+    }
+    .brandline .fdj-logo {
+      background: #fff;
+      padding: 6px 10px;
+      border-radius: 9px;
+      display: inline-flex;
+      align-items: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+    .brandline .fdj-logo svg { display: block; height: 22px; width: auto; }
+    .brandline .x { opacity: 0.55; }
+    .brandline .d365 { color: var(--gold); }
+    .head h1 {
+      margin: 18px 0 8px;
+      font-size: clamp(28px, 5.4vw, 50px);
+      font-weight: 800;
+      line-height: 1.05;
+      text-shadow: 0 6px 30px rgba(0, 0, 0, 0.35);
+    }
+    .head h1 .grad {
+      background: linear-gradient(90deg, #fff, var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .head p {
+      margin: 0 auto;
+      max-width: 640px;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: clamp(14px, 2vw, 17px);
+      font-weight: 500;
+    }
+
+    /* ---------- Progress ---------- */
+    .progress {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 22px 0 26px;
+    }
+    .dot {
+      width: 42px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      transition: background 0.4s, transform 0.4s;
+    }
+    .dot.active { background: var(--gold); transform: scaleY(1.6); }
+    .dot.done { background: #fff; }
+
+    /* ---------- Card deck ---------- */
+    .deck { position: relative; }
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      padding: clamp(22px, 3.5vw, 40px);
+      display: none;
+      animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .card.active { display: block; }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(28px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .qtop {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+    .qnum {
+      flex: 0 0 auto;
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(140deg, var(--fdj-red), var(--fdj-red-2));
+      box-shadow: 0 10px 22px rgba(226, 0, 26, 0.35);
+    }
+    .qtag {
+      font-size: 12.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--fdj-red);
+    }
+    .qtag small { display: block; color: var(--muted); font-weight: 600; letter-spacing: 0.2px; text-transform: none; margin-top: 2px; }
+
+    .qtext {
+      font-size: clamp(19px, 2.6vw, 26px);
+      font-weight: 700;
+      line-height: 1.25;
+      margin: 18px 0 22px;
+    }
+
+    /* ---------- Options ---------- */
+    .options { display: grid; gap: 12px; }
+    .opt {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface-soft);
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: left;
+      transition: transform 0.15s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .opt:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--fdj-blue-2); box-shadow: var(--shadow-lg); }
+    .opt:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+    .opt:disabled { cursor: default; }
+    .opt .key {
+      flex: 0 0 auto;
+      width: 30px; height: 30px;
+      border-radius: 9px;
+      display: grid; place-items: center;
+      background: #fff;
+      border: 2px solid var(--line);
+      font-weight: 800; font-size: 14px;
+      color: var(--fdj-blue);
+    }
+    .opt.correct { border-color: var(--ok); background: #eafaf1; }
+    .opt.correct .key { background: var(--ok); color: #fff; border-color: var(--ok); }
+    .opt.wrong { border-color: var(--fdj-red); background: #fdecee; }
+    .opt.wrong .key { background: var(--fdj-red); color: #fff; border-color: var(--fdj-red); }
+
+    /* ---------- Scratch reveal ---------- */
+    .reveal {
+      margin-top: 22px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: relative;
+      display: none;
+    }
+    .reveal.show { display: block; animation: cardIn 0.4s ease; }
+    .reveal-inner {
+      position: relative;
+      padding: 26px 24px;
+      background: linear-gradient(140deg, var(--fdj-blue), var(--fdj-blue-2));
+      color: #fff;
+      min-height: 150px;
+    }
+    .reveal-inner .rk {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+    .reveal-inner h3 { margin: 0 0 8px; font-size: clamp(18px, 2.4vw, 23px); font-weight: 800; }
+    .reveal-inner p { margin: 0; font-size: 15px; line-height: 1.55; color: rgba(255,255,255,0.9); font-weight: 500; }
+    .scratch-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      cursor: grab;
+      touch-action: none;
+    }
+    .scratch-hint {
+      position: absolute;
+      bottom: 12px; right: 16px;
+      font-size: 12px; font-weight: 700; color: rgba(16,32,63,0.55);
+      pointer-events: none;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+    /* ---------- Footer actions ---------- */
+    .actions {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; margin-top: 24px;
+    }
+    .hint { font-size: 13.5px; color: var(--muted); font-weight: 600; }
+    .btn {
+      appearance: none; border: 0; cursor: pointer;
+      font-family: inherit; font-weight: 800; font-size: 15px;
+      padding: 14px 26px; border-radius: 999px;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(140deg, var(--fdj-red), var(--fdj-red-2));
+      box-shadow: 0 12px 26px rgba(226, 0, 26, 0.4);
+    }
+    .btn-primary:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 16px 32px rgba(226, 0, 26, 0.5); }
+
+    /* ---------- Final ---------- */
+    .final { text-align: center; }
+    .final .trophy { font-size: 64px; line-height: 1; margin-bottom: 8px; animation: pop 0.6s cubic-bezier(0.22,1,0.36,1); }
+    @keyframes pop { from{transform:scale(0)} to{transform:scale(1)} }
+    .final h2 { font-size: clamp(24px, 4vw, 36px); margin: 6px 0 10px; font-weight: 800; }
+    .final .lead { color: var(--muted); font-size: 16px; max-width: 560px; margin: 0 auto 26px; font-weight: 500; }
+    .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+    @media (max-width: 620px) { .pillars { grid-template-columns: 1fr; } }
+    .pillar {
+      padding: 20px 16px; border-radius: var(--radius-md);
+      background: var(--surface-soft); border: 1px solid var(--line);
+      text-align: left;
+    }
+    .pillar .ico { font-size: 26px; }
+    .pillar h4 { margin: 10px 0 6px; font-size: 16px; font-weight: 800; color: var(--fdj-blue); }
+    .pillar p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; font-weight: 500; }
+
+    /* ---------- Confetti ---------- */
+    #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, .token, .scratch-hint { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Decorative floating tokens -->
+  <div class="token" style="top:12%; left:6%; font-size:70px; animation-delay:0s;">🍀</div>
+  <div class="token" style="top:70%; left:9%; font-size:90px; animation-delay:2s;">🎰</div>
+  <div class="token" style="top:22%; right:7%; font-size:80px; animation-delay:1s;">💎</div>
+  <div class="token" style="top:78%; right:11%; font-size:64px; animation-delay:3s;">🎲</div>
+
+  <canvas id="confetti"></canvas>
+
+  <main class="stage">
+    <header class="head">
+      <div class="brandline">
+        <span class="fdj-logo" aria-label="FDJ - La Française des Jeux">
+          <svg viewBox="0 0 172 56" role="img" xmlns="http://www.w3.org/2000/svg">
+            <title>FDJ</title>
+            <defs>
+              <linearGradient id="fdjBlue" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#2559c4"/>
+                <stop offset="1" stop-color="#123a92"/>
+              </linearGradient>
+            </defs>
+            <!-- Parallélogramme bleu incliné -->
+            <polygon points="18,6 120,6 106,50 4,50" fill="url(#fdjBlue)"/>
+            <!-- FDJ en blanc italique -->
+            <text x="18" y="40" font-family="'Plus Jakarta Sans',Arial,sans-serif"
+                  font-size="30" font-weight="800" font-style="italic"
+                  fill="#ffffff" letter-spacing="1">FDJ</text>
+            <!-- Trèfle à quatre feuilles -->
+            <g transform="translate(141 27)">
+              <g transform="rotate(45)"><path d="M0,0 C -15,-9 -16,-30 0,-24 C 16,-30 15,-9 0,0 Z" fill="#43a935"/></g>
+              <g transform="rotate(135)"><path d="M0,0 C -15,-9 -16,-30 0,-24 C 16,-30 15,-9 0,0 Z" fill="#1f6fd4"/></g>
+              <g transform="rotate(225)"><path d="M0,0 C -15,-9 -16,-30 0,-24 C 16,-30 15,-9 0,0 Z" fill="#5ab531"/></g>
+              <g transform="rotate(315)"><path d="M0,0 C -15,-9 -16,-30 0,-24 C 16,-30 15,-9 0,0 Z" fill="#2559c4"/></g>
+            </g>
+          </svg>
+        </span>
+        <span class="x">✕</span>
+        <span class="d365">Dynamics 365</span>
+      </div>
+      <h1>Grattez, devinez… <span class="grad">et gagnez à tous les coups</span></h1>
+      <p>3 questions autour du jeu et du hasard. Répondez, grattez la carte pour révéler le message — et repartez avec l'essentiel de Dynamics 365 en tête.</p>
+      <div class="progress" id="progress" aria-hidden="true"></div>
+    </header>
+
+    <section class="deck" id="deck"><!-- cards injected here --></section>
+  </main>
+
+  <script>
+    "use strict";
+
+    // ---------------- Data ----------------
+    const QUESTIONS = [
+      {
+        tag: "Manche 1 — Le grand jeu",
+        sub: "Une marque, mille façons de jouer",
+        question: "Sous une seule et même marque, combien de grandes familles de jeux la FDJ propose-t-elle (Loto, EuroMillions, jeux de grattage, paris sportifs, e-gaming…) ?",
+        options: [
+          "Une seule, le Loto",
+          "2 familles maximum",
+          "Une dizaine de familles, réunies au même endroit",
+          "Elles sont sur des plateformes séparées"
+        ],
+        answer: 2,
+        pillar: {
+          icon: "🧩",
+          kicker: "Plateforme unifiée & intégrée",
+          title: "Tout au même endroit, comme chez Dynamics 365",
+          text: "Ventes, Service client, Marketing, Contact Center et Copilot partagent la même donnée et la même expérience. Une seule plateforme, zéro silo — exactement comme la FDJ réunit tous ses jeux sous une seule marque."
+        }
+      },
+      {
+        tag: "Manche 2 — Chrono grattage",
+        sub: "Un geste, un résultat immédiat",
+        question: "Après avoir gratté un ticket, en combien de temps connaissez-vous le résultat ?",
+        options: [
+          "En quelques secondes, tout de suite",
+          "Après 24 h de traitement",
+          "Il faut appeler un conseiller",
+          "À la fin de la semaine"
+        ],
+        answer: 0,
+        pillar: {
+          icon: "⚙️",
+          kicker: "Simple à administrer",
+          title: "Configuré en minutes, pas en mois",
+          text: "Dynamics 365 s'administre en low-code : pas d'infrastructure à gérer, des mises à jour automatiques et des changements qui s'appliquent immédiatement. Aussi simple et rapide que de gratter un ticket."
+        }
+      },
+      {
+        tag: "Manche 3 — Le jackpot",
+        sub: "Ne laissez plus rien au hasard",
+        question: "Quelle est, environ, la probabilité de décrocher le jackpot à l'EuroMillions ?",
+        options: [
+          "1 chance sur 100",
+          "1 chance sur 10 000",
+          "1 chance sur ~139 millions",
+          "1 chance sur 2"
+        ],
+        answer: 2,
+        pillar: {
+          icon: "🤖",
+          kicker: "Agents IA intégrés « by design »",
+          title: "Le succès ne doit pas être un coup de chance",
+          text: "Là où le jackpot relève du hasard (1 sur 139 millions !), les agents IA Copilot sont intégrés nativement dans Dynamics 365 : ils qualifient, résument, recommandent et agissent — pour transformer chaque interaction en résultat, sans miser sur la chance."
+        }
+      }
+    ];
+
+    // ---------------- State ----------------
+    let current = 0;
+    const answered = new Array(QUESTIONS.length).fill(false);
+
+    const deck = document.getElementById("deck");
+    const progressEl = document.getElementById("progress");
+
+    // ---------------- Build progress dots ----------------
+    QUESTIONS.forEach((_, i) => {
+      const d = document.createElement("div");
+      d.className = "dot" + (i === 0 ? " active" : "");
+      progressEl.appendChild(d);
+    });
+
+    // ---------------- Build cards ----------------
+    QUESTIONS.forEach((q, i) => {
+      const card = document.createElement("section");
+      card.className = "card" + (i === 0 ? " active" : "");
+      card.dataset.index = i;
+
+      const optionsHtml = q.options.map((opt, oi) => `
+        <button class="opt" data-opt="${oi}">
+          <span class="key">${String.fromCharCode(65 + oi)}</span>
+          <span>${opt}</span>
+        </button>`).join("");
+
+      card.innerHTML = `
+        <div class="qtop">
+          <div class="qnum">${i + 1}</div>
+          <div class="qtag">${q.tag}<small>${q.sub}</small></div>
+        </div>
+        <p class="qtext">${q.question}</p>
+        <div class="options" role="group" aria-label="Réponses possibles">${optionsHtml}</div>
+
+        <div class="reveal">
+          <div class="reveal-inner">
+            <span class="rk">✦ ${q.pillar.kicker}</span>
+            <h3>${q.pillar.title}</h3>
+            <p>${q.pillar.text}</p>
+          </div>
+          <canvas class="scratch-canvas"></canvas>
+          <span class="scratch-hint">👆 Grattez pour révéler</span>
+        </div>
+
+        <div class="actions">
+          <span class="hint">Choisissez une réponse pour débloquer la carte à gratter.</span>
+          <button class="btn btn-primary next" disabled>
+            ${i === QUESTIONS.length - 1 ? "Voir le récap 🏆" : "Question suivante →"}
+          </button>
+        </div>`;
+
+      deck.appendChild(card);
+      wireCard(card, q, i);
+    });
+
+    // ---------------- Card behaviour ----------------
+    function wireCard(card, q, index) {
+      const opts = Array.from(card.querySelectorAll(".opt"));
+      const reveal = card.querySelector(".reveal");
+      const nextBtn = card.querySelector(".next");
+      const hint = card.querySelector(".hint");
+
+      opts.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (answered[index]) return;
+          answered[index] = true;
+          const chosen = Number(btn.dataset.opt);
+
+          opts.forEach((b, bi) => {
+            b.disabled = true;
+            if (bi === q.answer) b.classList.add("correct");
+            else if (bi === chosen) b.classList.add("wrong");
+          });
+
+          hint.textContent = chosen === q.answer
+            ? "Bien joué ! Grattez la carte ci-dessous 👇"
+            : "Presque ! La bonne réponse est en vert. Grattez pour découvrir pourquoi 👇";
+
+          reveal.classList.add("show");
+          initScratch(reveal, () => {
+            nextBtn.disabled = false;
+            nextBtn.focus();
+          });
+        });
+      });
+
+      nextBtn.addEventListener("click", () => goTo(index + 1));
+    }
+
+    // ---------------- Navigation ----------------
+    function goTo(index) {
+      const dots = progressEl.querySelectorAll(".dot");
+
+      if (index >= QUESTIONS.length) {
+        showFinal();
+        dots.forEach((d) => { d.classList.remove("active"); d.classList.add("done"); });
+        return;
+      }
+
+      document.querySelectorAll(".card").forEach((c) => c.classList.remove("active"));
+      const target = deck.querySelector(`.card[data-index="${index}"]`);
+      if (target) target.classList.add("active");
+      current = index;
+
+      dots.forEach((d, di) => {
+        d.classList.toggle("active", di === index);
+        d.classList.toggle("done", di < index);
+      });
+
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    // ---------------- Scratch effect ----------------
+    function initScratch(reveal, onCleared) {
+      const canvas = reveal.querySelector(".scratch-canvas");
+      const inner = reveal.querySelector(".reveal-inner");
+      const hint = reveal.querySelector(".scratch-hint");
+      if (canvas.dataset.ready) return;
+      canvas.dataset.ready = "1";
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = inner.getBoundingClientRect();
+      const w = rect.width, h = rect.height;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+
+      // Metallic scratch coating
+      const grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, "#c9ccd6");
+      grad.addColorStop(0.45, "#aab0be");
+      grad.addColorStop(0.5, "#e8ebf2");
+      grad.addColorStop(0.55, "#aab0be");
+      grad.addColorStop(1, "#c9ccd6");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = "rgba(16,32,63,0.35)";
+      ctx.font = "700 20px 'Plus Jakarta Sans', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("★ CARTE À GRATTER ★", w / 2, h / 2);
+
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.lineWidth = 34;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      let drawing = false;
+      let last = null;
+      let cleared = false;
+
+      const pos = (e) => {
+        const r = canvas.getBoundingClientRect();
+        const p = e.touches ? e.touches[0] : e;
+        return { x: p.clientX - r.left, y: p.clientY - r.top };
+      };
+
+      const scratch = (pt) => {
+        if (last) {
+          ctx.beginPath();
+          ctx.moveTo(last.x, last.y);
+          ctx.lineTo(pt.x, pt.y);
+          ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 17, 0, Math.PI * 2);
+        ctx.fill();
+        last = pt;
+      };
+
+      const start = (e) => { drawing = true; last = null; scratch(pos(e)); e.preventDefault(); };
+      const move = (e) => { if (drawing) { scratch(pos(e)); checkCleared(); } };
+      const end = () => { drawing = false; last = null; checkCleared(true); };
+
+      function checkCleared(force) {
+        if (cleared) return;
+        // Sample transparency
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let transparent = 0;
+        const step = 40; // sample every Nth pixel for perf
+        for (let i = 3; i < img.length; i += step * 4) {
+          if (img[i] === 0) transparent++;
+        }
+        const total = img.length / (step * 4);
+        const ratio = transparent / total;
+        if (ratio > 0.5 || (force && ratio > 0.35)) {
+          cleared = true;
+          if (hint) hint.style.display = "none";
+          canvas.style.transition = "opacity 0.5s";
+          canvas.style.opacity = "0";
+          setTimeout(() => { canvas.style.pointerEvents = "none"; }, 500);
+          onCleared && onCleared();
+        }
+      }
+
+      canvas.addEventListener("mousedown", start);
+      canvas.addEventListener("mousemove", move);
+      window.addEventListener("mouseup", end);
+      canvas.addEventListener("touchstart", start, { passive: false });
+      canvas.addEventListener("touchmove", move, { passive: false });
+      canvas.addEventListener("touchend", end);
+    }
+
+    // ---------------- Final screen ----------------
+    function showFinal() {
+      document.querySelectorAll(".card").forEach((c) => c.classList.remove("active"));
+
+      const card = document.createElement("section");
+      card.className = "card active";
+      card.innerHTML = `
+        <div class="final">
+          <div class="trophy">🏆</div>
+          <h2>Jackpot ! Vous avez tout gratté.</h2>
+          <p class="lead">Retenez ces 3 atouts de Dynamics 365 — la plateforme où l'excellence client n'est jamais un coup de chance.</p>
+          <div class="pillars">
+            <div class="pillar"><div class="ico">🧩</div><h4>Unifiée & intégrée</h4><p>Ventes, Service, Marketing & Contact Center sur une seule plateforme, une seule donnée.</p></div>
+            <div class="pillar"><div class="ico">⚙️</div><h4>Simple à administrer</h4><p>Low-code, sans infra, mises à jour automatiques. Configuré en minutes.</p></div>
+            <div class="pillar"><div class="ico">🤖</div><h4>IA « by design »</h4><p>Les agents Copilot intégrés nativement pour transformer chaque interaction.</p></div>
+          </div>
+          <button class="btn btn-primary" id="replay">Rejouer 🔄</button>
+        </div>`;
+      deck.appendChild(card);
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      fireConfetti();
+
+      card.querySelector("#replay").addEventListener("click", () => location.reload());
+    }
+
+    // ---------------- Confetti ----------------
+    function fireConfetti() {
+      const canvas = document.getElementById("confetti");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const colors = ["#e2001a", "#f5c518", "#0a2a6b", "#ffffff", "#123a92"];
+      const pieces = Array.from({ length: 160 }, () => ({
+        x: Math.random() * canvas.width,
+        y: -20 - Math.random() * canvas.height,
+        r: 5 + Math.random() * 7,
+        c: colors[(Math.random() * colors.length) | 0],
+        vy: 2 + Math.random() * 4,
+        vx: -2 + Math.random() * 4,
+        rot: Math.random() * Math.PI,
+        vr: -0.2 + Math.random() * 0.4
+      }));
+      let frames = 0;
+      (function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach((p) => {
+          p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.c;
+          ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6);
+          ctx.restore();
+        });
+        frames++;
+        if (frames < 320) requestAnimationFrame(loop);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      })();
+    }
+  </script>
+</body>
+</html>
