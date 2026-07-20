@@ -524,6 +524,11 @@
             nextBtn.disabled = false;
             nextBtn.focus();
           });
+
+          // Défiler automatiquement vers la carte à gratter
+          requestAnimationFrame(() => {
+            reveal.scrollIntoView({ behavior: "smooth", block: "center" });
+          });
         });
       });
 
