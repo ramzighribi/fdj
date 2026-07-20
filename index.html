@@ -265,9 +265,9 @@
     /* ---------- Footer actions ---------- */
     .actions {
       display: flex; align-items: center; justify-content: space-between;
-      gap: 14px; margin-top: 24px;
+      gap: 14px; margin-top: 24px; flex-wrap: wrap;
     }
-    .hint { font-size: 13.5px; color: var(--muted); font-weight: 600; }
+    .hint { font-size: 13.5px; color: var(--muted); font-weight: 600; flex: 1 1 200px; }
     .btn {
       appearance: none; border: 0; cursor: pointer;
       font-family: inherit; font-weight: 800; font-size: 15px;
@@ -302,6 +302,29 @@
 
     /* ---------- Confetti ---------- */
     #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+
+    /* ---------- Responsive (mobile) ---------- */
+    @media (max-width: 680px) {
+      .token { font-size: 46px !important; opacity: 0.5; }
+    }
+    @media (max-width: 560px) {
+      body { padding: 14px; align-items: flex-start; }
+      .token { display: none; }
+      .brandline { flex-wrap: wrap; justify-content: center; gap: 8px 12px; font-size: 13px; }
+      .head { margin-bottom: 18px; }
+      .progress { margin: 16px 0 20px; }
+      .dot { width: 32px; }
+      .card { padding: 20px 16px; border-radius: 20px; }
+      .qnum { width: 44px; height: 44px; font-size: 19px; border-radius: 13px; }
+      .qtop { gap: 11px; }
+      .opt { padding: 14px 14px; font-size: 15px; gap: 11px; }
+      .opt .key { width: 26px; height: 26px; font-size: 13px; }
+      .reveal-inner { padding: 20px 18px; }
+      .actions { flex-direction: column; align-items: stretch; }
+      .hint { flex: 1 1 auto; text-align: center; order: 2; }
+      .btn { order: 1; width: 100%; justify-content: center; padding: 15px 20px; }
+      .pillar { padding: 16px 14px; }
+    }
 
     @media (prefers-reduced-motion: reduce) {
       *, .token, .scratch-hint { animation: none !important; }
